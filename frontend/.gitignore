@@ -31,3 +31,10 @@ Thumbs.db
 *.njsproj
 *.sln
 *.swp
+# --- Angular Cache ---
+.angular/
+
+# --- Dependencias ---
+node_modules/
+jspm_packages/
+...
