@@ -21,15 +21,25 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const userRole = role || 'user';
-    // Insertar usuario
+
+    // 1. Insertar usuario
     const [result] = await pool.query<ResultSetHeader>(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
       [name, email, hashedPassword, userRole]
     );
 
+    const newUserId = result.insertId;
+
+    // 2. ¡CRUCIAL! Crear su configuración inicial en 'user_config' vinculada al nuevo usuario
+    await pool.query(
+      `INSERT INTO user_config (user_id, pay_frequency, base_salary, initial_savings, balance_threshold) 
+       VALUES (?, 'mensual', 0.00, 0.00, 0.00)`,
+      [newUserId]
+    );
+
     res.status(201).json({
       message: 'Usuario registrado exitosamente',
-      user: { id: result.insertId, name, email, role: userRole }
+      user: { id: newUserId, name, email, role: userRole }
     });
   } catch (error) {
     console.error('Error en registro:', error);
@@ -48,14 +58,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const user = rows[0];
-    //verifica la contraseña encriptada
+    // Verifica la contraseña encriptada
     const validPassword = await bcrypt.compare(password, user['password']);
     if (!validPassword) {
       res.status(400).json({ error: 'Credenciales inválidas.' });
       return;
     }
 
-    //genera un token JWT
+    // Genera un token JWT
     const token = jwt.sign(
       { id: user['id'], email: user['email'], role: user['role'] },
       JWT_SECRET,

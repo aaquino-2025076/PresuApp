@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import { getIncomes, createIncome, deleteIncome } from '../controllers/incomes.controller.js';
 import { validate } from '../middlewares/validate.middleware.js';
+import { authenticateToken } from '../middlewares/auth.middleware.js';
 import { createIncomeSchema } from '../schemas/budget.schemas.js';
 
 const router = Router();
+
+router.use(authenticateToken);
 
 router.get('/', getIncomes);
 router.post('/', validate(createIncomeSchema), createIncome);
