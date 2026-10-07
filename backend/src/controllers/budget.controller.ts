@@ -20,7 +20,7 @@ export const getBudgetSummary = async (req: Request, res: Response): Promise<voi
     const initialSavings = Number(configRows[0]?.initial_savings || 0);
     const balanceThreshold = Number(configRows[0]?.balance_threshold || 0);
 
-    // 2. Ingresos extras del usuario (COALESCE evita retornar NULL si no hay filas)
+    // 2. Ingresos extras del usuario
     const [incomeRows] = await pool.query<RowDataPacket[]>(
       'SELECT COALESCE(SUM(amount), 0) AS extraIncomes FROM incomes WHERE user_id = ?',
       [userId]
@@ -52,21 +52,41 @@ export const getBudgetSummary = async (req: Request, res: Response): Promise<voi
       });
     }
 
-    // 4. Meta de ahorro
+    // 4. Meta de ahorro y periodo
     const [goalRows] = await pool.query<RowDataPacket[]>(
-      'SELECT target_amount FROM savings_goals WHERE user_id = ? LIMIT 1',
+      'SELECT target_amount, period FROM savings_goals WHERE user_id = ? LIMIT 1',
       [userId]
     );
-    const savingsGoal = Number(goalRows[0]?.target_amount || 0);
+    const savingsGoalAmount = Number(goalRows[0]?.target_amount || 0);
+    const savingsGoalPeriod = goalRows[0]?.period || 'mensual';
 
-    // 5. Saldo disponible (Ahorro inicial + Ingresos totales - Gastos totales)
+    // Objeto estructurado para plantillas que leen propiedades anidadas (.targetAmount, .period)
+    const goalObject = {
+      targetAmount: savingsGoalAmount,
+      target_amount: savingsGoalAmount,
+      amount: savingsGoalAmount,
+      period: savingsGoalPeriod
+    };
+
+    // 5. Saldo disponible
     const availableBalance = initialSavings + totalIncome - totalExpenses;
 
     res.json({
       availableBalance,
       totalIncome,
+      totalIncomes: totalIncome,
       totalExpenses,
-      savingsGoal,
+      // Objeto estructurado de meta
+      savingsGoal: goalObject,
+      goal: goalObject,
+      // Propiedades planas de respaldo
+      savingsGoalAmount,
+      targetAmount: savingsGoalAmount,
+      amount: savingsGoalAmount,
+      period: savingsGoalPeriod,
+      goalPeriod: savingsGoalPeriod,
+      savingsGoalPeriod,
+      savingsPeriod: savingsGoalPeriod,
       balanceThreshold,
       alerts: []
     });
