@@ -1,0 +1,74 @@
+<div class="page-container">
+  <h2>Gestión de Ingresos Extras</h2>
+
+  @if (successMessage) {
+    <div class="alert-success">{{ successMessage }}</div>
+  }
+
+  <!-- Formulario con diseño uniforme a Configuración -->
+  <section class="card-section">
+    <h3>Registrar Nuevo Ingreso Extra</h3>
+    <form [formGroup]="incomeForm" (ngSubmit)="addIncome()">
+      <div class="form-grid">
+        <div class="form-group flex-2">
+          <label>Descripción</label>
+          <input 
+            type="text" 
+            formControlName="description" 
+            placeholder="Ej: Bono extra, Venta de equipo, Freelance..." 
+          />
+        </div>
+
+        <div class="form-group flex-1">
+          <label>Monto (GTQ)</label>
+          <input 
+            type="number" 
+            formControlName="amount" 
+            min="0.01" 
+            step="0.01" 
+            placeholder="0.00" 
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-success" [disabled]="incomeForm.invalid">
+        + Registrar Ingreso
+      </button>
+    </form>
+  </section>
+
+  <!-- Historial de Ingresos Extras -->
+  <section class="card-section">
+    <h3>Historial de Ingresos Extras</h3>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Descripción</th>
+            <th>Monto</th>
+            <th>Fecha de Registro</th>
+            <th class="text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of budgetService.incomes(); track item.id) {
+            <tr>
+              <td class="font-medium">{{ item.description }}</td>
+              <td class="amount-text">{{ item.amount | currency:'GTQ':'symbol':'1.2-2' }}</td>
+              <td>{{ item.date | date:'dd/MM/yyyy' }}</td>
+              <td class="text-right">
+                <button class="btn-delete" (click)="deleteIncome(item.id)" title="Eliminar ingreso">
+                  🗑️ Eliminar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="text-center empty-state">No hay ingresos extras registrados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

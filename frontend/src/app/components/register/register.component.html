@@ -1,0 +1,75 @@
+<div class="page-container flex-center">
+  <div class="card-section auth-card">
+    <h2>Crear Cuenta en PresuApp</h2>
+
+    @if (errorMessage) {
+      <div class="alert-danger">{{ errorMessage }}</div>
+    }
+
+    @if (successMessage) {
+      <div class="alert-success">{{ successMessage }}</div>
+    }
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <!-- Nombre completo -->
+      <div class="form-group">
+        <label>Nombre Completo</label>
+        <input 
+          type="text" 
+          formControlName="name" 
+          placeholder="Ej: Angel Aquino" 
+        />
+        @if (registerForm.get('name')?.touched && registerForm.get('name')?.invalid) {
+          <small class="error-text">El nombre debe tener al menos 2 caracteres.</small>
+        }
+      </div>
+
+      <!-- Correo Electrónico -->
+      <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input 
+          type="email" 
+          formControlName="email" 
+          placeholder="correo@ejemplo.com" 
+        />
+        @if (registerForm.get('email')?.touched && registerForm.get('email')?.invalid) {
+          <small class="error-text">Ingresa un correo electrónico válido.</small>
+        }
+      </div>
+
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input 
+          type="password" 
+          formControlName="password" 
+          placeholder="••••••••" 
+        />
+        @if (registerForm.get('password')?.touched && registerForm.get('password')?.invalid) {
+          <small class="error-text">La contraseña debe tener al menos 6 caracteres.</small>
+        }
+      </div>
+
+      <!-- Confirmar Contraseña -->
+      <div class="form-group">
+        <label>Confirmar Contraseña</label>
+        <input 
+          type="password" 
+          formControlName="confirmPassword" 
+          placeholder="••••••••" 
+        />
+        @if (registerForm.get('confirmPassword')?.touched && registerForm.hasError('passwordMismatch')) {
+          <small class="error-text">Las contraseñas no coinciden.</small>
+        }
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-submit" [disabled]="registerForm.invalid">
+        Registrarse
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      ¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión aquí</a>
+    </p>
+  </div>
+</div>

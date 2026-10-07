@@ -1,0 +1,95 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.presu-navbar {
+  background-color: #4338ca;
+  color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.presu-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.presu-nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.presu-brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.presu-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.presu-link {
+  color: #ffffff;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.presu-link:hover {
+  background-color: #4f46e5;
+}
+
+.presu-link.active {
+  background-color: #312e81;
+}
+
+.presu-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.presu-btn-theme {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.presu-btn-logout {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: none;
+}
+
+.presu-mobile-btn,
+.presu-mobile-menu {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .presu-nav-links {
+    display: none;
+  }
+  .presu-mobile-btn {
+    display: block;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+  }
+}

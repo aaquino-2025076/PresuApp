@@ -1,0 +1,84 @@
+<nav class="presu-navbar">
+  <div class="presu-nav-container">
+    <div class="presu-nav-content">
+      
+      <!-- Brand / Logo -->
+      <a routerLink="/" class="presu-brand">
+        💰 PresuApp
+      </a>
+
+      <!-- Enlaces Escritorio -->
+      <div class="presu-nav-links">
+        <a routerLink="/" 
+           routerLinkActive="active" 
+           [routerLinkActiveOptions]="{ exact: true }"
+           class="presu-link">
+          Home
+        </a>
+        <a routerLink="/daily" 
+           routerLinkActive="active"
+           class="presu-link">
+          Gastos Diarios
+        </a>
+        <a routerLink="/incomes" 
+           routerLinkActive="active"
+           class="presu-link">
+          Ingresos Extras
+        </a>
+        <a routerLink="/goal" 
+           routerLinkActive="active"
+           class="presu-link">
+          Meta de Ahorro
+        </a>
+        <a routerLink="/config" 
+           routerLinkActive="active" 
+           class="presu-link">
+          Configuración
+        </a>
+
+        <!-- Botón de Tema -->
+        <button (click)="themeService.toggleTheme()" class="presu-btn presu-btn-theme" type="button">
+          @if (themeService.currentTheme() === 'light') {
+            🌙 Oscuro
+          } @else {
+            ☀️ Claro
+          }
+        </button>
+
+        <!-- Botón Logout -->
+        <button (click)="authService.logout()" class="presu-btn presu-btn-logout" type="button">
+          Cerrar Sesión
+        </button>
+      </div>
+
+      <!-- Botón Hamburguesa Móvil -->
+      <button (click)="toggleMenu()" type="button" class="presu-mobile-btn" aria-label="Abrir menú">
+        ☰
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Menú Móvil -->
+  @if (isMenuOpen) {
+    <div class="presu-mobile-menu">
+      <a routerLink="/" (click)="isMenuOpen = false" class="presu-mobile-link">Home</a>
+      <a routerLink="/daily" (click)="isMenuOpen = false" class="presu-mobile-link">Gastos Diarios</a>
+      <a routerLink="/incomes" (click)="isMenuOpen = false" class="presu-mobile-link">Ingresos Extras</a>
+      <a routerLink="/goal" (click)="isMenuOpen = false" class="presu-mobile-link">Meta de Ahorro</a>
+      <a routerLink="/config" (click)="isMenuOpen = false" class="presu-mobile-link">Configuración</a>
+      
+      <button (click)="themeService.toggleTheme(); isMenuOpen = false" class="presu-mobile-link presu-mobile-btn-action">
+        @if (themeService.currentTheme() === 'light') {
+          🌙 Modo Oscuro
+        } @else {
+          ☀️ Modo Claro
+        }
+      </button>
+
+      <button (click)="authService.logout(); isMenuOpen = false" class="presu-mobile-link presu-mobile-btn-action">
+        🚪 Cerrar Sesión
+      </button>
+    </div>
+  }
+</nav>

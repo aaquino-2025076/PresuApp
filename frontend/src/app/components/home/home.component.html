@@ -1,0 +1,56 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>Panel Financiero General</h1>
+    <p>Resumen de presupuesto, balance general e indicadores clave.</p>
+  </header>
+
+  <!-- Módulo de Alertas con diseño original -->
+  @if (summary() && summary()!.alerts.length > 0) {
+  <app-alerts [alerts]="summary()!.alerts"></app-alerts>
+  }
+
+  @if (summary(); as data) {
+  <!-- Tarjetas de Métricas -->
+  <div class="metrics-grid">
+    <div class="metric-card" [class.danger]="data.availableBalance <= 0 || data.alerts.length > 0"
+      [class.warning]="data.availableBalance > 0 && data.alerts.length > 0">
+      <span class="card-title">Saldo Disponible</span>
+      <h2 class="card-value">{{ data.availableBalance | currency:'GTQ':'symbol':'1.2-2' }}</h2>
+      <span class="card-subtitle">Restante libre para uso</span>
+    </div>
+
+    <div class="metric-card">
+      <span class="card-title">Total Ingresos</span>
+      <h2 class="card-value">{{ data.totalIncomes | currency:'GTQ':'symbol':'1.2-2' }}</h2>
+      <span class="card-subtitle">Sueldo base + extras</span>
+    </div>
+
+    <div class="metric-card">
+      <span class="card-title">Total Gastos</span>
+      <h2 class="card-value">{{ data.totalExpenses | currency:'GTQ':'symbol':'1.2-2' }}</h2>
+      <span class="card-subtitle">Fijos + diarios del periodo</span>
+    </div>
+
+    <div class="metric-card">
+      <span class="card-title">Meta Ahorro ({{ data.savingsGoal.period }})</span>
+      <h2 class="card-value">{{ data.savingsGoal.targetAmount | currency:'GTQ':'symbol':'1.2-2' }}</h2>
+      <span class="card-subtitle">Objetivo protegido</span>
+    </div>
+  </div>
+
+  <!-- Accesos Rápidos -->
+  <section class="card-section">
+    <h3>Acciones de Gestión Rápida</h3>
+    <div class="buttons-group">
+      <a routerLink="/config" class="btn btn-primary">Configuración General</a>
+      <a routerLink="/incomes" class="btn btn-income">+ Ingresos Extras</a>
+      <a routerLink="/daily" class="btn btn-daily">+ Gasto Diario</a>
+      <a routerLink="/goal" class="btn btn-goal">Meta de Ahorro</a>
+    </div>
+  </section>
+  } @else {
+  <div class="loading-spinner">
+    <p>Cargando balance financiero...</p>
+  </div>
+  }
+</div>

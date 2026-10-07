@@ -1,0 +1,44 @@
+<div class="page-container">
+  <h2>Meta de Ahorro</h2>
+
+  @if (successMessage) {
+    <div class="alert-success">{{ successMessage }}</div>
+  }
+
+  <section class="card-section">
+    <h3>Definir Objetivo de Ahorro</h3>
+    <form [formGroup]="goalForm" (ngSubmit)="saveGoal()">
+      <div class="form-grid">
+        
+        <!-- Periodo / Frecuencia con todas las opciones -->
+        <div class="form-group flex-1">
+          <label>Plazo / Periodo</label>
+          <select formControlName="period">
+            <option value="diario">Diario</option>
+            <option value="semanal">Semanal</option>
+            <option value="quincenal">Quincenal</option>
+            <option value="mensual">Mensual</option>
+            <option value="anual">Anual</option>
+          </select>
+        </div>
+
+        <!-- Monto -->
+        <div class="form-group flex-1">
+          <label>Meta Numérica a Reservar (GTQ)</label>
+          <input 
+            type="number" 
+            formControlName="targetAmount" 
+            min="0" 
+            step="0.01" 
+            placeholder="0.00" 
+          />
+        </div>
+
+      </div>
+
+      <button type="submit" class="btn btn-purple" [disabled]="goalForm.invalid">
+        Guardar Meta
+      </button>
+    </form>
+  </section>
+</div>

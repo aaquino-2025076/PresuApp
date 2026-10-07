@@ -1,0 +1,29 @@
+<div class="page-container flex-center">
+  <div class="card-section auth-card">
+    <h2>Iniciar Sesión en PresuApp</h2>
+
+    @if (errorMessage) {
+      <div class="alert-danger">{{ errorMessage }}</div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Correo Electrónico</label>
+        <input type="email" formControlName="email" placeholder="correo@ejemplo.com" />
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" formControlName="password" placeholder="••••••••" />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-submit" [disabled]="loginForm.invalid">
+        Ingresar
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      ¿No tienes cuenta? <a routerLink="/register">Regístrate aquí</a>
+    </p>
+  </div>
+</div>
