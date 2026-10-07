@@ -2,74 +2,76 @@ import { Request, Response } from 'express';
 import { pool } from '../config/db.js';
 import { RowDataPacket } from 'mysql2';
 
-export const getSummary = async (req: Request, res: Response): Promise<void> => {
+export const getBudgetSummary = async (req: Request, res: Response): Promise<void> => {
   try {
-    // 1. Obtener configuración del usuario (incluyendo balance_threshold)
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: 'Usuario no autenticado.' });
+      return;
+    }
+
+    // 1. Configuración del usuario actual
     const [configRows] = await pool.query<RowDataPacket[]>(
-      'SELECT pay_frequency, base_salary, initial_savings, balance_threshold FROM user_config LIMIT 1'
+      'SELECT base_salary, initial_savings, balance_threshold FROM user_config WHERE user_id = ?',
+      [userId]
     );
-    const config = configRows[0] || { base_salary: 0, initial_savings: 0, balance_threshold: 0 };
+    const baseSalary = Number(configRows[0]?.base_salary || 0);
+    const initialSavings = Number(configRows[0]?.initial_savings || 0);
+    const balanceThreshold = Number(configRows[0]?.balance_threshold || 0);
 
-    // 2. Sumar ingresos extra
+    // 2. Ingresos extras del usuario (COALESCE evita retornar NULL si no hay filas)
     const [incomeRows] = await pool.query<RowDataPacket[]>(
-      'SELECT COALESCE(SUM(amount), 0) AS total FROM incomes'
+      'SELECT COALESCE(SUM(amount), 0) AS extraIncomes FROM incomes WHERE user_id = ?',
+      [userId]
     );
-    const extraIncomesTotal = Number(incomeRows[0].total);
+    const extraIncomes = Number(incomeRows[0]?.extraIncomes || 0);
+    const totalIncome = baseSalary + extraIncomes;
 
-    // 3. Sumar gastos fijos
-    const [fixedExpenseRows] = await pool.query<RowDataPacket[]>(
-      'SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE type = "fixed"'
+    // 3. Gastos del usuario
+    const [expenseRows] = await pool.query<RowDataPacket[]>(
+      'SELECT amount, type, frequency FROM expenses WHERE user_id = ?',
+      [userId]
     );
-    const fixedExpensesTotal = Number(fixedExpenseRows[0].total);
 
-    // 4. Sumar gastos diarios
-    const [dailyExpenseRows] = await pool.query<RowDataPacket[]>(
-      'SELECT COALESCE(SUM(amount), 0) AS total FROM expenses WHERE type = "daily"'
-    );
-    const dailyExpensesTotal = Number(dailyExpenseRows[0].total);
+    let totalExpenses = 0;
+    if (expenseRows && expenseRows.length > 0) {
+      expenseRows.forEach(exp => {
+        const amount = Number(exp.amount) || 0;
+        if (exp.type === 'daily') {
+          totalExpenses += amount;
+        } else if (exp.type === 'fixed') {
+          switch (exp.frequency) {
+            case 'semanal': totalExpenses += amount * 4; break;
+            case 'quincenal': totalExpenses += amount * 2; break;
+            case 'anual': totalExpenses += amount / 12; break;
+            case 'mensual':
+            default: totalExpenses += amount; break;
+          }
+        }
+      });
+    }
 
-    // 5. Obtener meta de ahorro
+    // 4. Meta de ahorro
     const [goalRows] = await pool.query<RowDataPacket[]>(
-      'SELECT target_amount, period FROM savings_goals LIMIT 1'
+      'SELECT target_amount FROM savings_goals WHERE user_id = ? LIMIT 1',
+      [userId]
     );
-    const goal = goalRows[0] || { target_amount: 0, period: 'mensual' };
+    const savingsGoal = Number(goalRows[0]?.target_amount || 0);
 
-    // Cálculos
-    const baseSalary = Number(config.base_salary);
-    const initialSavings = Number(config.initial_savings);
-    const balanceThreshold = Number(config.balance_threshold || 0);
-    const targetAmount = Number(goal.target_amount);
-
-    const totalIncomes = baseSalary + initialSavings + extraIncomesTotal;
-    const totalExpenses = fixedExpensesTotal + dailyExpensesTotal;
-    const availableBalance = totalIncomes - totalExpenses - targetAmount;
-
-    // Sistema de advertencias
-    const alerts: string[] = [];
-
-    if (availableBalance <= 0) {
-      alerts.push('¡Advertencia! Tu saldo disponible es igual o menor a cero.');
-    } else if (balanceThreshold > 0 && availableBalance <= balanceThreshold) {
-      alerts.push(`Alerta de Saldo Bajo: Tu disponible (Q ${availableBalance.toFixed(2)}) ha caído por debajo de tu límite de seguridad (Q ${balanceThreshold.toFixed(2)}).`);
-    }
-
-    if ((totalIncomes - totalExpenses) < targetAmount) {
-      alerts.push('Atención: Tus gastos acumulados no te permitirán cumplir tu meta de ahorro.');
-    }
+    // 5. Saldo disponible (Ahorro inicial + Ingresos totales - Gastos totales)
+    const availableBalance = initialSavings + totalIncome - totalExpenses;
 
     res.json({
-      baseSalary,
-      totalIncomes,
-      totalExpenses,
       availableBalance,
-      savingsGoal: {
-        targetAmount,
-        period: goal.period
-      },
-      alerts
+      totalIncome,
+      totalExpenses,
+      savingsGoal,
+      balanceThreshold,
+      alerts: []
     });
   } catch (error) {
-    console.error('Error al obtener el resumen de MySQL:', error);
-    res.status(500).json({ error: 'Error al consultar la base de datos MySQL.' });
+    console.error('Error al obtener el resumen del presupuesto:', error);
+    res.status(500).json({ error: 'Error al calcular el resumen financiero.' });
   }
 };

@@ -51,6 +51,7 @@ export class AuthService {
     if (this.isBrowser) {
       localStorage.removeItem('presuapp_token');
       localStorage.removeItem('presuapp_user');
+      localStorage.removeItem('token');
     }
     this.currentUser.set(null);
     this.isAuthenticated.set(false);

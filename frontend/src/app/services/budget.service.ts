@@ -20,6 +20,14 @@ export class BudgetService {
     this.refreshAllData();
   }
 
+  // Limpiar el estado reactivo en memoria
+  public clearState(): void {
+    this.summary.set(null);
+    this.incomes.set([]);
+    this.expenses.set([]);
+    this.userConfig.set(null);
+  }
+
   // Conversión de frecuencia a monto mensual equivalente
   public getMonthlyEquivalent(expense: Expense): number {
     if (expense.type !== 'fixed') return expense.amount;

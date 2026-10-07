@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { BudgetService } from '../../services/budget.service';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +15,7 @@ import { AuthService } from '../../services/auth.service';
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private budgetService = inject(BudgetService);
   private router = inject(Router);
 
   loginForm: FormGroup = this.fb.group({
@@ -28,6 +30,8 @@ export class LoginComponent {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
+        this.budgetService.clearState();
+        this.budgetService.refreshAllData();
         this.router.navigate(['/']);
       },
       error: (err) => {
