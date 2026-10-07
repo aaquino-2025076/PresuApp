@@ -7,7 +7,7 @@ import { UserConfigComponent } from './components/user-config/user-config.compon
 import { IncomeFormComponent } from './components/income-form/income-form.component';
 import { DailyTrackerComponent } from './components/daily-tracker/daily-tracker.component';
 import { SavingsGoalComponent } from './components/savings-goal/savings-goal.component';
-import { NavbarComponent } from './shared/navbar/navbar.component';
+import { FixedExpensesComponent } from './components/fixed-expenses/fixed-expenses.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -16,6 +16,7 @@ export const routes: Routes = [
   { path: 'config', component: UserConfigComponent, canActivate: [authGuard] },
   { path: 'incomes', component: IncomeFormComponent, canActivate: [authGuard] },
   { path: 'daily', component: DailyTrackerComponent, canActivate: [authGuard] },
+  { path: 'fixed', component: FixedExpensesComponent, canActivate: [authGuard] }, 
   { path: 'goal', component: SavingsGoalComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

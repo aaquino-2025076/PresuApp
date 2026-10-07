@@ -4,7 +4,7 @@
     <p>Resumen de presupuesto, balance general e indicadores clave.</p>
   </header>
 
-  <!-- Módulo de Alertas con diseño original -->
+  <!-- Módulo de Alertas -->
   @if (summary() && summary()!.alerts.length > 0) {
   <app-alerts [alerts]="summary()!.alerts"></app-alerts>
   }
@@ -12,6 +12,7 @@
   @if (summary(); as data) {
   <!-- Tarjetas de Métricas -->
   <div class="metrics-grid">
+    <!-- Saldo Disponible con la línea roja lateral cuando es <= 0 -->
     <div class="metric-card" [class.danger]="data.availableBalance <= 0 || data.alerts.length > 0"
       [class.warning]="data.availableBalance > 0 && data.alerts.length > 0">
       <span class="card-title">Saldo Disponible</span>
@@ -44,6 +45,7 @@
     <div class="buttons-group">
       <a routerLink="/config" class="btn btn-primary">Configuración General</a>
       <a routerLink="/incomes" class="btn btn-income">+ Ingresos Extras</a>
+      <a routerLink="/fixed" class="btn btn-fixed">+ Gastos Fijos</a>
       <a routerLink="/daily" class="btn btn-daily">+ Gasto Diario</a>
       <a routerLink="/goal" class="btn btn-goal">Meta de Ahorro</a>
     </div>

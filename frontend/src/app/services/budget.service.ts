@@ -2,12 +2,14 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BudgetSummary, Income, Expense, UserConfig, SavingsGoal } from '../models/budget.models';
 import { Observable, tap } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BudgetService {
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
   private apiUrl = 'http://localhost:3000/api';
 
   // Signals para estado reactivo
@@ -17,7 +19,8 @@ export class BudgetService {
   public userConfig = signal<UserConfig | null>(null);
 
   constructor() {
-    this.refreshAllData();
+    // IMPORTANTE: Se remueve la llamada a refreshAllData() del constructor.
+    // Los servicios no deben realizar peticiones HTTP autenticadas al instanciarse.
   }
 
   // Limpiar el estado reactivo en memoria
@@ -59,8 +62,12 @@ export class BudgetService {
       .reduce((sum, e) => sum + e.amount, 0);
   });
 
-  // Carga inicial y refresco global de datos
+  // Refresco de datos solo si el usuario está autenticado
   public refreshAllData(): void {
+    if (!this.authService.isAuthenticated()) {
+      return; // Evita peticiones HTTP si no hay token/sesión activa
+    }
+
     this.getSummary().subscribe();
     this.getIncomes().subscribe();
     this.getExpenses().subscribe();
@@ -74,18 +81,15 @@ export class BudgetService {
 
     if (!sum) return alertsList;
 
-    // 1. Alerta si el saldo es negativo
     if (sum.availableBalance < 0) {
       alertsList.push(`¡Atención! Tu saldo disponible está en negativo: Q ${sum.availableBalance.toFixed(2)}`);
     }
 
-    // 2. Alerta por umbral personalizado (balanceThreshold)
     const threshold = config?.balanceThreshold ?? config?.balance_threshold ?? 0;
     if (threshold > 0 && sum.availableBalance >= 0 && sum.availableBalance <= threshold) {
       alertsList.push(`Alerta de Saldo Bajo: Tu disponible (Q ${sum.availableBalance.toFixed(2)}) cayó por debajo de tu umbral configurado (Q ${threshold.toFixed(2)}).`);
     }
 
-    // 3. Incluir las alertas que ya devuelva el backend en summary
     if (sum.alerts && sum.alerts.length > 0) {
       alertsList.push(...sum.alerts);
     }
@@ -93,7 +97,7 @@ export class BudgetService {
     return [...new Set(alertsList)];
   });
 
-  // 1. Resumen y Métrica General
+  // Endpoints API
   getSummary(): Observable<BudgetSummary> {
     return this.http.get<BudgetSummary>(`${this.apiUrl}/budget/summary`).pipe(
       tap((data) => this.summary.set(data))
@@ -112,7 +116,6 @@ export class BudgetService {
     );
   }
 
-  // 3. Ingresos
   getIncomes(): Observable<Income[]> {
     return this.http.get<Income[]>(`${this.apiUrl}/incomes`).pipe(
       tap((data) => this.incomes.set(data))
@@ -131,7 +134,6 @@ export class BudgetService {
     );
   }
 
-  // 4. Gastos (Fijos y Diarios)
   getExpenses(type?: 'fixed' | 'daily'): Observable<Expense[]> {
     const url = type ? `${this.apiUrl}/expenses?type=${type}` : `${this.apiUrl}/expenses`;
     return this.http.get<Expense[]>(url).pipe(
@@ -151,7 +153,6 @@ export class BudgetService {
     );
   }
 
-  // 5. Metas de Ahorro
   getGoal(): Observable<SavingsGoal> {
     return this.http.get<SavingsGoal>(`${this.apiUrl}/goals`);
   }
